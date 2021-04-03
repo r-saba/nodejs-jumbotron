@@ -5,6 +5,7 @@ const http = require('http').Server(app);
 const ejs = require('ejs');
 const helmet = require('helmet');
 var fs = require("fs");
+const service = require('./lib/rest.js');
 
 app.use('/assets', express.static('assets'));
 app.set('view engine', 'ejs');
@@ -30,6 +31,33 @@ var port = 3000;
  */
 app.get('/', function (req, res) {
     res.render('index', { title: 'Jumbotron | Home' });
+});
+
+/**
+ * API Calls from Library
+ */
+app.get('/api/:apiCall', function(req, res, next) {
+
+    let args = {apiCall: req.params.apiCall};
+    service.apiCall(args, (function (error, response, body) {
+
+        console.log('error:', error); // Print the error if one occurred
+        console.log('statusCode:', response && response.statusCode); // Print the response status code if a response was received
+        console.log('body:', body); // Print the HTML for the Google homepage.
+
+        res.status(response && response.statusCode || 500);
+
+        if(error) {
+            res.send(error);
+            next();
+        }
+        else {
+            res.send(body);
+            next();
+        }
+
+    }));
+
 });
 
 // Create server on port 3000
